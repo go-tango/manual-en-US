@@ -48,3 +48,26 @@ func main() {
     t.Run()
 }
 ```
+
+Of course you can also add HTTP status on return values. For example,
+
+```Go
+type Action struct {
+    tango.Json
+}
+
+var i int
+func (Action) Get() (int, interface{}) {
+   if i == 0 {
+       i = i + 1
+       return 200, map[string]interface{}{"i":i}
+   }
+   return 500, errors.New("could not visit")
+}
+
+func main() {
+    t := tango.Classic()
+    t.Any("/", new(Action))
+    t.Run()
+}
+```
