@@ -19,7 +19,7 @@ import (
 )
 
 type Action struct {
-    tango.Json
+    tango.JSON
 }
 
 func (Action) Get() interface{} {
@@ -48,7 +48,7 @@ If you change the code above from `true` to `false`, you will get another result
 {"err":"something error"}
 ```
 
-Because this code has embbeded `tango.Json`, so the return value could be converted to json automatically.
+Because this code has embbeded `tango.JSON`, so the return value could be converted to json automatically.
 
 ## Usage
 
