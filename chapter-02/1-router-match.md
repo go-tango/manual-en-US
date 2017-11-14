@@ -49,6 +49,7 @@ t.Route("POST:MyPost", "/", new(Action))
 ```
 
 ### define more route once
+
 ```Go
 t.Route([]string{"GET:MyGet", "POST"}, "/", new(Action))
 ```
@@ -64,12 +65,14 @@ t.Route(map[string]string{"GET":"MyGet", "POST":"MyPost"}, "/", new(Action))
 2. Other routers will order by it's added sequence.
 
 For examples:
+
 ```Go
 t := tango.Classic()
 t.Get("/:name", new(Others))
 t.Get("/admin", new(Admin))
 t.Run()
 ```
+
 When you request `/admin`, the `Admin`'s `Get` method will be invoked.
 
 ```Go
@@ -92,4 +95,80 @@ t.Run()
 ## Params
 
 The matched params can get By *Context
-For named , catch-all or regexp Path: `ctx.Params().Get(":name")`
+* For named or regexp route: `ctx.Param(":name")` 或者 `ctx.Param("name")`
+* For catch-all route: `ctx.Param("*name")`
+
+## GET Params example
+
+* Visit http://xx.com/api/1.0/users?name=111  
+* Notice: name needs lower case
+
+```Go
+import "github.com/tango-contrib/binding"
+
+type Getuser struct {
+  	tango.JSON
+	tango.Ctx
+	binding.Binder
+}
+
+func (this *Getuser) Get() interface{} {
+	type GetStruct struct {
+		Name string
+	}
+	var data GetStruct
+	err := this.Bind(&data)
+	if err != nil {
+		return map[string]interface{}{
+			"res":    "no",
+			"msg":    "get param error",
+			"err:":   err,
+			"status": 500,
+		}
+	}
+  fmt.Println(data.Name)
+  //.....
+  }
+
+  func main() {
+	t := tango.Classic()
+	t.Use(binding.Bind())
+    t.Get("/api/1.0/users", new(Getuser))
+    //......
+```
+
+## POST Params JSON example
+
+* curl -H "Content-Type: application/json" -X POST  --Data '{ "Uid": "7","Aim_sn":"123456"}' -k https://xx.cn/inapi/1.0/setaiport
+
+```Go
+type Settid struct {
+  	tango.JSON
+	tango.Ctx
+}
+
+func (this *Settid) Post() interface{} {
+	type jsondata struct {
+		Uid    string `json:"Uid"`
+		Tid    string `json:"Tid"`
+		Aim_sn string `json:"Aim_sn"`
+	}
+	var data jsondata
+	err = this.DecodeJSON(&data)
+	if err != nil {
+		return map[string]interface{}{
+			"res":    "no",
+			"msg":    "DecodeJSON error",
+			"err:":   err,
+			"status": 500,
+		}
+	}
+  fmt.Println(data.Uid)
+  //.....
+  }
+
+  func main() {
+    t := tango.Classic()
+    t.Post("/inapi/1.0/setaiport", new(Settid))
+    //......
+```
